@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "JniGen": {
+      "commandName": "Project",
+      "commandLineArgs": "-file D:\\Projects\\VisualStudio\\CPP\\libkotfmod\\libkotfmod.h -domain com -company nkrapivindev -product libkotfmod -classname LKFNative"
+    }
+  }
+}
