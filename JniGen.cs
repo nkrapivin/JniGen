@@ -283,7 +283,7 @@ namespace JniGen
                 }
             }
 
-            return $"package {Domain}.{Company}.{Product};\n\n// add your imports here...\n\npublic class {ClassName} {{\n\tpublic {ClassName}() {{\n\t\tSystem.loadLibrary(\"your-library-here\");\n\t}}\n\n{tempout}}} // {ClassName}\n";
+            return $"package {Domain}.{Company}.{Product};\n\n// add your imports here...\nimport java.nio.ByteBuffer;\nimport java.lang.String;\n\npublic class {ClassName} {{\n\tpublic {ClassName}() {{\n\t\tSystem.loadLibrary(\"your-library-here\");\n\t}}\n\n{tempout}}} // {ClassName}\n";
         }
     }
 }
