@@ -2,7 +2,7 @@
   "profiles": {
     "JniGen": {
       "commandName": "Project",
-      "commandLineArgs": "-file D:\\Projects\\VisualStudio\\CPP\\libkotfmod\\libkotfmod.h -domain com -company nkrapivindev -product libkotfmod -classname LKFNative"
+      "commandLineArgs": "-file testcase.hpp -domain com -company nkrapivindev -product jnigentest -classname TestCase"
     }
   }
 }

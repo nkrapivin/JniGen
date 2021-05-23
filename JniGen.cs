@@ -32,22 +32,26 @@ namespace JniGen
         {
             if (line.Contains(','))
             {
-                return line.Substring(0, line.IndexOf(','));
+                return line.Substring(0, line.IndexOf(',')).TrimStart('*');
             }
             else
             {
-                return line.Substring(0, line.IndexOf(')'));
+                return line.Substring(0, line.IndexOf(')')).TrimStart('*');
             }
         }
 
         public string Peek(string line)
         {
-            return line.Substring(0, line.IndexOf(' ') + 1);
+            string normal = line.Substring(0, line.IndexOf(' ') + 1);
+            if (normal.Length == 0)
+                normal = line.Substring(0, line.IndexOf(')') + 1);
+            return normal;
         }
 
         public string Rid(string line)
         {
-            return line.Remove(0, line.IndexOf(' ') + 1);
+            string rem = line.Remove(0, line.IndexOf(' ') + 1);
+            return rem;
         }
 
         public string GetRidOfTypes(string line, out bool isString, out string theType, out bool isConst)
@@ -62,6 +66,12 @@ namespace JniGen
                 tt += peek;
                 if (peek != "const " && peek != "unsigned " && peek != "long ")
                 {
+                    // star in a different position?
+                    if (Peek(line).Contains('*'))
+                    {
+                        tt = tt.TrimEnd() + '*';
+                    }
+
                     break;
                 }
             }
@@ -145,29 +155,30 @@ namespace JniGen
                             {
                                 // GetStringUTFChars and ReleaseStringUTFChars handling
                                 jniline.Append("jstring ");
+
+                                // make a valid isCopy variable just in case.
                                 if (!didAddTempVar)
                                 {
                                     jniPre.Append("\t\tjboolean _isCopy{ JNI_FALSE };\n");
                                     didAddTempVar = true;
                                 }
 
-                                jniPre.Append("\t\tconst char* _cstr_" + argName + "{ jniEnv->GetStringUTFChars(" + argName + ", &_isCopy) };\n");
-                                jniPost.Append("\t\tjniEnv->ReleaseStringUTFChars(" + argName + ", _cstr_" + argName + ");\n");
-                                jniArgName = "_cstr_" + argName;
+                                jniArgName = $"_cstr_{argName}";
+                                jniPre.Append($"\t\tconst char* {jniArgName}{{ jniEnv->GetStringUTFChars({argName}, &_isCopy) }};\n");
+                                jniPost.Append($"\t\tjniEnv->ReleaseStringUTFChars({argName}, {jniArgName});\n");
+                                
                             }
                             else
                             {
                                 // GetDirectBufferAddress handling
                                 jniline.Append("jobject ");
-                                string constwrapper = "{0}";
-                                if (isConst)
-                                    constwrapper = "const_cast<const void*>({0})";
-                                string castwrapper = "reinterpret_cast<" + theType + ">({0})";
+                                string constwrapper = isConst ? "const_cast<const void*>({0})" : "{0}";
+                                string castwrapper = $"reinterpret_cast<{theType}>({{0}})";
 
-                                string addrline = string.Format(castwrapper, string.Format(constwrapper, "jniEnv->GetDirectBufferAddress(" + argName + ")"));
+                                string addrline = string.Format(castwrapper, string.Format(constwrapper, $"jniEnv->GetDirectBufferAddress({argName})"));
 
-                                jniPre.Append("\t\t" + theType + " _raw_" + argName + $"{{ {addrline} }};\n");
                                 jniArgName = "_raw_" + argName;
+                                jniPre.Append($"\t\t{theType} {jniArgName}{{ {addrline} }};\n");
                             }
 
                             jniline.Append(argName);
