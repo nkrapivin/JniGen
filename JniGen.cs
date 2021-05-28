@@ -163,10 +163,14 @@ namespace JniGen
                                     didAddTempVar = true;
                                 }
 
+                                // Apollo is sometimes using `char*` for strings, but JNI string functions work with `const char*`
+                                string constwrapper = isConst ? "const " : "";
+                                string castwrapperStart = isConst ? "" : "const_cast<char*>(";
+                                string castwrapperEnd = isConst ? "" : ")";
+
                                 jniArgName = $"_cstr_{argName}";
-                                jniPre.Append($"\t\tconst char* {jniArgName}{{ jniEnv->GetStringUTFChars({argName}, &_isCopy) }};\n");
-                                jniPost.Append($"\t\tjniEnv->ReleaseStringUTFChars({argName}, {jniArgName});\n");
-                                
+                                jniPre.Append($"\t\t{constwrapper}char* {jniArgName}{{ {castwrapperStart}jniEnv->GetStringUTFChars({argName}, &_isCopy){castwrapperEnd} }};\n");
+                                jniPost.Append($"\t\tjniEnv->ReleaseStringUTFChars({argName}, const_cast<const char*>({jniArgName}));\n");
                             }
                             else
                             {
