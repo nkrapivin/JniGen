@@ -67,7 +67,7 @@ namespace JniGen
                 if (peek != "const " && peek != "unsigned " && peek != "long ")
                 {
                     // star in a different position?
-                    if (Peek(line).Contains('*'))
+                    if (Peek(line).StartsWith('*'))
                     {
                         tt = tt.TrimEnd() + '*';
                     }
