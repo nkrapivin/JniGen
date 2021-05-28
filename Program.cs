@@ -21,6 +21,9 @@ namespace JniGen
                 string company = "whatever";
                 string product = "yourlibrary";
                 string classname = "AutogenClassNative";
+                string[] includes = null;
+                string[] libraries = null;
+                string[] imports = null;
                 string file = null;
 
                 for (int i = 0; i < args.Length; i++)
@@ -57,6 +60,27 @@ namespace JniGen
                                 break;
                             }
 
+                        case "-includes":
+                            {
+                                string itoParse = args[++i];
+                                includes = itoParse.Split(';');
+                                break;
+                            }
+
+                        case "-libraries":
+                            {
+                                string ltoParse = args[++i];
+                                libraries = ltoParse.Split(';');
+                                break;
+                            }
+
+                        case "-imports":
+                            {
+                                string imtoParse = args[++i];
+                                imports = imtoParse.Split(';');
+                                break;
+                            }
+
                         default:
                             {
                                 throw new Exception($"Invalid argument '{args[i]}'");
@@ -70,7 +94,7 @@ namespace JniGen
                 }
 
                 Console.WriteLine($"Running JniGen on file {file}");
-                new JniGen().SetProperties(domain, company, product, classname).Generate(file);
+                new JniGen().SetProperties(domain, company, product, classname, includes, libraries, imports).Generate(file);
                 Console.WriteLine($"{classname}.java and JNI_{classname}.cpp generated, have fun.");
             }
         }

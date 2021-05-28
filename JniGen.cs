@@ -9,13 +9,19 @@ namespace JniGen
         string Company { get; set; }
         string Product { get; set; }
         string ClassName { get; set; }
+        string[] Includes { get; set; }
+        string[] Libraries { get; set; }
+        string[] Imports { get; set; }
 
-        public JniGen SetProperties(string domain, string company, string product, string classname)
+        public JniGen SetProperties(string domain, string company, string product, string classname, string[] includes, string[] libraries, string[] imports)
         {
             Domain = domain;
             Company = company;
             Product = product;
             ClassName = classname;
+            Includes = includes;
+            Libraries = libraries;
+            Imports = imports;
             return this;
         }
 
@@ -219,7 +225,34 @@ namespace JniGen
                 }
             }
 
-            return $"#ifdef __ANDROID__\n/* add your includes here... */\n\nextern \"C\" {{\n#include <jni.h>\n{tempout}}}\n#endif /* __ANDROID__ */\n";
+            string _includes = "";
+            if (Includes != null)
+            {
+                StringBuilder includeBuilder = new StringBuilder();
+                foreach (string incl in Includes)
+                {
+                    bool incl_global = false;
+                    if (incl.StartsWith("~"))
+                    {
+                        incl_global = true;
+                    }
+
+                    includeBuilder.Append("#include ");
+                    if (incl_global) includeBuilder.Append('<');
+                    else includeBuilder.Append('"');
+                    includeBuilder.Append(incl_global ? incl.Substring(1) : incl);
+                    if (incl_global) includeBuilder.Append('>');
+                    else includeBuilder.Append('"');
+
+                    includeBuilder.Append('\n');
+                }
+
+                includeBuilder.Append('\n');
+                _includes = includeBuilder.ToString();
+            }
+
+
+            return $"#ifdef __ANDROID__\n\n/* includes go here: */\n{_includes}\nextern \"C\" {{\n#include <jni.h>\n{tempout}}}\n#endif /* __ANDROID__ */\n";
         }
 
         public string GenerateJavaFile(string[] text)
@@ -298,7 +331,38 @@ namespace JniGen
                 }
             }
 
-            return $"package {Domain}.{Company}.{Product};\n\n// add your imports here...\nimport java.nio.ByteBuffer;\nimport java.lang.String;\n\npublic class {ClassName} {{\n\tpublic {ClassName}() {{\n\t\tSystem.loadLibrary(\"your-library-here\");\n\t}}\n\n{tempout}}} // {ClassName}\n";
+            string _libraries = "";
+            if (Libraries != null)
+            {
+                StringBuilder libraryBuilder = new StringBuilder();
+                foreach (string library in Libraries)
+                {
+                    libraryBuilder.Append("\t\tSystem.loadLibrary(\"");
+                    libraryBuilder.Append(library);
+                    libraryBuilder.Append("\");\n");
+                }
+
+                libraryBuilder.Append('\n');
+                _libraries = libraryBuilder.ToString();
+            }
+
+            string _imports = "";
+            if (Imports != null)
+            {
+                StringBuilder importsBuilder = new StringBuilder();
+                foreach (string import in Imports)
+                {
+                    importsBuilder.Append("import ");
+                    importsBuilder.Append(import);
+                    importsBuilder.Append(";\n");
+                }
+
+                importsBuilder.Append('\n');
+                _imports = importsBuilder.ToString();
+            }
+
+
+            return $"package {Domain}.{Company}.{Product};\n\n// very basic required imports:\nimport java.nio.ByteBuffer;\nimport java.lang.String;\nimport java.lang.System; // needed for loadLibrary\n\n// custom imports go here:\n{_imports}\n\npublic class {ClassName} {{\n\tpublic {ClassName}() {{\n\t\t// custom loadLibrary calls go here:\n{_libraries}\t}}\n\n{tempout}}} // {ClassName}\n";
         }
     }
 }

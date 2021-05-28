@@ -2,7 +2,7 @@
   "profiles": {
     "JniGen": {
       "commandName": "Project",
-      "commandLineArgs": "-domain com -company yellowafterlife -product apollo -classname ApolloNative -file D:\\Projects\\VisualStudio\\CPP\\Apollo\\Apollo23_yy\\extensions\\Apollo\\Apollo.cpp"
+      "commandLineArgs": "-domain com -company yellowafterlife -product apollo -classname ApolloNative -file D:\\Projects\\VisualStudio\\CPP\\Apollo\\Apollo_yy\\extensions\\Apollo\\Apollo.cpp -libraries apollo -includes apollo.h;apollo_shared.h;~unistd.h -imports com.yoyogames.RunnerJNILib;com.yoyogames.*"
     }
   }
 }
